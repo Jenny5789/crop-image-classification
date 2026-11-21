@@ -2,7 +2,7 @@
 
 # 이미지 분류 · 딥러닝 프로젝트
 
-작물 이미지(고추·배추·오이) 2,250장을 활용한 **과적합 진단, 원인 분석, 모델 경량화, 프레임워크 비교** CNN 분류 프로젝트
+CNN·과적합 진단·TensorFlow·PyTorch 비교 실험을 수행한 **딥러닝 이미지 분류 프로젝트**
 
 `Python` · `TensorFlow` · `Keras` · `PyTorch` · `scikit-learn` · `Jupyter Notebook`
 
