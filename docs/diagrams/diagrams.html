@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>crop-image-classification README diagrams</title>
+<!--
+  README 도식 원본. 섹션 하나 = PNG 하나.
+  렌더: docs/diagrams/render.ps1 (Edge headless로 #섹션id 를 열어 캡처 → images/*.png)
+  스타일: 흰 배경 · 진한 포레스트 그린(#0E4A2B) · 회색 박스 · 줄간격 1.3
+-->
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #fff; }
+  body { width: 1200px; padding: 28px; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; color: #1a1a1a; line-height: 1.3; }
+  section { display: none; }
+  section:target { display: block; }
+
+  .lane { font-size: 19px; font-weight: 700; color: #0E4A2B; margin: 4px 0 10px; }
+  .lane span { font-size: 16px; font-weight: 400; color: #666; margin-left: 10px; }
+
+  .box { background: #fff; border: 2px solid #D9DEDB; border-radius: 12px; padding: 18px 20px; }
+  .box.final { border: 2px solid #0E4A2B; }
+  .box.muted { background: #F6F7F6; }
+  .box h3 { font-size: 20px; font-weight: 700; color: #0E4A2B; margin-bottom: 8px; }
+  .box .tech { font-size: 17px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
+  .box p { font-size: 15px; color: #555; line-height: 1.5; }
+  .mono { font-family: Consolas, "Malgun Gothic", monospace; }
+
+  .arrow { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  svg text { font-family: "Malgun Gothic", "맑은 고딕", sans-serif; }
+
+  /* 파이프라인 */
+  .pipe { display: grid; grid-template-columns: 1fr 44px 1fr 44px 1fr 44px 1fr 44px 1fr; }
+  .pipe .box { height: 176px; padding: 18px; }
+  .files { display: grid; grid-template-columns: 1fr 44px 1fr 44px 1fr 44px 1fr 44px 1fr; margin-top: 12px; }
+  .chip { display: inline-block; background: #F3F5F4; border-radius: 8px; padding: 6px 10px; font-family: Consolas, monospace; font-size: 12.5px; font-weight: 700; color: #0E4A2B; }
+
+  /* 모델 구조 비교 */
+  .net { display: grid; grid-template-columns: repeat(8, 1fr); column-gap: 0; align-items: stretch; }
+  .net .blk { border: 2px solid #D9DEDB; border-radius: 10px; padding: 12px 8px; text-align: center; min-height: 82px; display: flex; flex-direction: column; justify-content: center; margin: 0 9px; }
+  .net .blk b { font-size: 17px; color: #1a1a1a; }
+  .net .blk span { font-size: 13.5px; color: #666; margin-top: 4px; }
+  .net .blk.base { background: #F6F7F6; }
+  .net .blk.chg { border-color: #0E4A2B; }
+  .net .blk.chg b { color: #0E4A2B; }
+  .net-gap { height: 36px; }
+
+  /* 실험 요약 막대 */
+  .chart { padding-left: 0; }
+  .chart .grp { display: flex; margin-left: 56px; }
+  .chart .grp div { font-size: 17px; font-weight: 700; color: #0E4A2B; padding-bottom: 8px; }
+  .chart .grp div small { font-size: 14px; font-weight: 400; color: #666; margin-left: 8px; }
+  .plot { position: relative; height: 300px; margin-left: 56px; border-bottom: 2px solid #C9D0CC; display: flex; align-items: flex-end; }
+  .plot .gl { position: absolute; left: 0; right: 0; border-top: 1px solid #EEF1EF; }
+  .plot .gl i { position: absolute; left: -52px; top: -9px; font-style: normal; font-size: 13px; color: #888; width: 44px; text-align: right; }
+  .slot { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; position: relative; z-index: 1; }
+  .slot .v { font-size: 16px; font-weight: 700; color: #6B7570; margin-bottom: 5px; }
+  .slot .bar { width: 54px; background: #C9D0CC; border-radius: 6px 6px 0 0; }
+  .slot.hi .v { color: #0E4A2B; }
+  .slot.hi .bar { background: #0E4A2B; }
+  .slot.fin .bar { background: #0E4A2B; }
+  .spacer { width: 44px; height: 100%; border-left: 2px dashed #9AA19D; margin-left: 20px; }
+  .xl { display: flex; margin-left: 56px; margin-top: 8px; }
+  .xl .s { flex: 1; text-align: center; font-size: 13.5px; color: #444; line-height: 1.35; }
+  .xl .s b { display: block; font-size: 16px; color: #0E4A2B; }
+  .xl .sp { width: 64px; }
+  .note { margin-top: 14px; margin-left: 56px; font-size: 14px; color: #777; }
+  /* 과적합 학습 곡선 */
+  .oc-leg { display: flex; justify-content: flex-end; gap: 10px; align-items: center; font-size: 15px; color: #444; margin-bottom: 6px; }
+  .oc-leg i { display: inline-block; width: 26px; height: 4px; border-radius: 2px; margin-left: 12px; }
+  .oc-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+</style>
+</head>
+<body>
+
+<!-- ============ 프로젝트 흐름 (README 대표 이미지) ============ -->
+<section id="pipeline">
+  <div class="pipe">
+    <div class="box muted"><h3>01 데이터 준비</h3><div class="tech">AI Hub 작물 3종</div><p>2,250장<br>128×128 RGB</p></div>
+    <div class="arrow"><svg width="40" height="14"><line x1="0" y1="7" x2="30" y2="7" stroke="#0E4A2B" stroke-width="3"/><polygon points="28,1 40,7 28,13" fill="#0E4A2B"/></svg></div>
+    <div class="box"><h3>02 과적합 대응</h3><div class="tech">실험 1-7</div><p>정규화 · 경량화<br>Val Acc 최고 67.1%</p></div>
+    <div class="arrow"><svg width="40" height="14"><line x1="0" y1="7" x2="30" y2="7" stroke="#0E4A2B" stroke-width="3"/><polygon points="28,1 40,7 28,13" fill="#0E4A2B"/></svg></div>
+    <div class="box"><h3>03 원인 분석</h3><div class="tech">데이터 구성 비교</div><p>Train · Val 구성<br>피사체 차이 확인</p></div>
+    <div class="arrow"><svg width="40" height="14"><line x1="0" y1="7" x2="30" y2="7" stroke="#0E4A2B" stroke-width="3"/><polygon points="28,1 40,7 28,13" fill="#0E4A2B"/></svg></div>
+    <div class="box final"><h3>04 재검증</h3><div class="tech">실험 8-11</div><p>데이터 재분배 후<br>Val Acc 86.4%</p></div>
+    <div class="arrow"><svg width="40" height="14"><line x1="0" y1="7" x2="30" y2="7" stroke="#0E4A2B" stroke-width="3"/><polygon points="28,1 40,7 28,13" fill="#0E4A2B"/></svg></div>
+    <div class="box"><h3>05 비교 · 점검</h3><div class="tech">최종 모델 선정</div><p>DNN vs CNN<br>Keras vs PyTorch</p></div>
+  </div>
+  <div class="files">
+    <div><span class="chip">crop_classifier_1</span></div><div></div>
+    <div><span class="chip">crop_classifier_1</span></div><div></div>
+    <div><span class="chip">crop_classifier_1</span></div><div></div>
+    <div><span class="chip">crop_classifier_2</span></div><div></div>
+    <div><span class="chip">crop_classifier_2 · 3</span></div>
+  </div>
+</section>
+
+<!-- ============ 모델 경량화: 구조 비교 ============ -->
+<section id="model-slimming">
+  <div class="lane">Baseline CNN <span>실험 1 · 입력 128×128×3 · 파라미터 859,395개</span></div>
+  <div class="net">
+    <div class="blk base"><b>Rescaling</b><span>1/255</span></div>
+    <div class="blk base"><b>Conv 32</b><span>3×3 + Pool</span></div>
+    <div class="blk base"><b>Conv 64</b><span>3×3 + Pool</span></div>
+    <div class="blk base"><b>Conv 64</b><span>3×3 + Pool</span></div>
+    <div class="blk base"><b>Flatten</b><span>12,544</span></div>
+    <div class="blk base"><b>Dense 64</b><span>ReLU</span></div>
+    <div class="blk base"><b>Dropout</b><span>0.3</span></div>
+    <div class="blk base"><b>Softmax</b><span>3 클래스</span></div>
+  </div>
+  <div class="net-gap"></div>
+  <div class="lane">최종 CNN <span>실험 10 · 입력 128×128×3 · 파라미터 15,491개 (약 98% 감소)</span></div>
+  <div class="net">
+    <div class="blk"><b>Rescaling</b><span>1/255</span></div>
+    <div class="blk chg"><b>Conv 16</b><span>3×3 + Pool</span></div>
+    <div class="blk chg"><b>Conv 32</b><span>3×3 + Pool</span></div>
+    <div class="blk chg"><b>Conv 32</b><span>3×3 + Pool</span></div>
+    <div class="blk chg"><b>GAP</b><span>32</span></div>
+    <div class="blk chg"><b>Dense 32</b><span>ReLU</span></div>
+    <div class="blk chg"><b>Dropout</b><span>0.5</span></div>
+    <div class="blk"><b>Softmax</b><span>3 클래스</span></div>
+  </div>
+</section>
+
+<!-- ============ 데이터 재분배 ============ -->
+<section id="data-redistribution">
+  <div style="display:grid; grid-template-columns: 1fr 64px 1fr 64px 1fr; grid-template-rows: auto 150px 150px; row-gap: 18px;">
+    <div class="lane" style="grid-row:1; grid-column:1">재분배 전 <span>원본 구분 유지</span></div>
+    <div class="lane" style="grid-row:1; grid-column:5">재분배 후 <span>작물별 동일 비율</span></div>
+    <div class="box muted" style="grid-row:2; grid-column:1"><h3>Training</h3><div class="tech">작물별 623-1,595장</div><p>열매 중심 · 어린 묘 포함</p></div>
+    <div class="box muted" style="grid-row:3; grid-column:1"><h3>Validation</h3><div class="tech">작물별 1,110-1,604장</div><p>잎 · 줄기 · 꽃 포함<br>성장한 배추</p></div>
+    <div style="grid-row:2/4; grid-column:2">
+      <svg width="64" height="318">
+        <path d="M0 75 H24 M0 243 H24 M24 75 V243 M24 159 H50" stroke="#0E4A2B" stroke-width="3" fill="none"/>
+        <polygon points="48,153 64,159 48,165" fill="#0E4A2B"/>
+      </svg>
+    </div>
+    <div class="box" style="grid-row:2/4; grid-column:3; align-self:center; height:170px"><h3>통합 후 무작위 분할</h3><div class="tech">작물별 750장 추출</div><p>Training + Validation 통합<br><span class="mono">random.seed(42)</span></p></div>
+    <div style="grid-row:2/4; grid-column:4">
+      <svg width="64" height="318">
+        <path d="M0 159 H14 M14 75 V243 M14 75 H50 M14 243 H50" stroke="#0E4A2B" stroke-width="3" fill="none"/>
+        <polygon points="48,69 64,75 48,81" fill="#0E4A2B"/>
+        <polygon points="48,237 64,243 48,249" fill="#0E4A2B"/>
+      </svg>
+    </div>
+    <div class="box final" style="grid-row:2; grid-column:5"><h3>Train 1,800장</h3><div class="tech">작물별 600장</div><p>고추 · 배추 · 오이</p></div>
+    <div class="box final" style="grid-row:3; grid-column:5"><h3>Validation 450장</h3><div class="tech">작물별 150장</div><p>고추 · 배추 · 오이</p></div>
+  </div>
+</section>
+
+<!-- ============ 실험 11회 Validation 정확도 ============ -->
+<section id="experiment-summary">
+  <div class="chart">
+    <div class="grp">
+      <div style="flex:7">모델 조정 <small>실험 1-7 · 원본 Training / Validation</small></div>
+      <div style="width:64px"></div>
+      <div style="flex:4">데이터 재분배 <small>실험 8-11</small></div>
+    </div>
+    <div class="plot">
+      <div class="gl" style="bottom:20%"><i>20%</i></div>
+      <div class="gl" style="bottom:40%"><i>40%</i></div>
+      <div class="gl" style="bottom:60%"><i>60%</i></div>
+      <div class="gl" style="bottom:80%"><i>80%</i></div>
+      <div class="gl" style="bottom:100%"><i>100%</i></div>
+      <div class="slot"><div class="v">66.7</div><div class="bar" style="height:200px"></div></div>
+      <div class="slot"><div class="v">65.1</div><div class="bar" style="height:195.3px"></div></div>
+      <div class="slot"><div class="v">67.1</div><div class="bar" style="height:201.3px"></div></div>
+      <div class="slot"><div class="v">57.6</div><div class="bar" style="height:172.7px"></div></div>
+      <div class="slot"><div class="v">65.1</div><div class="bar" style="height:195.3px"></div></div>
+      <div class="slot"><div class="v">62.2</div><div class="bar" style="height:186.7px"></div></div>
+      <div class="slot"><div class="v">66.7</div><div class="bar" style="height:200px"></div></div>
+      <div class="spacer"></div>
+      <div class="slot hi"><div class="v">79.8</div><div class="bar" style="height:239.3px"></div></div>
+      <div class="slot hi"><div class="v">82.7</div><div class="bar" style="height:248px"></div></div>
+      <div class="slot hi fin"><div class="v">86.4</div><div class="bar" style="height:259.3px"></div></div>
+      <div class="slot hi"><div class="v">82.7</div><div class="bar" style="height:248px"></div></div>
+    </div>
+    <div class="xl">
+      <div class="s"><b>1</b>Baseline</div>
+      <div class="s"><b>2</b>+ 증강</div>
+      <div class="s"><b>3</b>Dropout 0.5</div>
+      <div class="s"><b>4</b>증강 + Dropout</div>
+      <div class="s"><b>5</b>경량화 (GAP)</div>
+      <div class="s"><b>6</b>경량화 + 증강</div>
+      <div class="s"><b>7</b>추가 경량화</div>
+      <div class="sp"></div>
+      <div class="s"><b>8</b>재분배</div>
+      <div class="s"><b>9</b>+ Epoch 30</div>
+      <div class="s"><b>10</b>+ Epoch 50 (최종)</div>
+      <div class="s"><b>11</b>추가 경량화</div>
+    </div>
+    <div class="note">Validation 정확도 (%) · 실험 1-7과 8-11은 Validation 데이터 구성이 달라 동일 기준 비교는 아님</div>
+  </div>
+</section>
+
+<!-- ============ 과적합 학습 곡선 (실험 1, 7) ============ -->
+<section id="overfitting-curve">
+<div class="oc-leg"><i style="background:#9AA19D"></i>Train<i style="background:#0E4A2B"></i>Validation</div>
+<div class="lane">실험 1 · Baseline CNN <span>파라미터 859,395개</span></div>
+<div class="oc-pair">
+<svg viewBox="0 0 580 262" width="100%"><text x="46" y="18" font-size="17" font-weight="700" fill="#0E4A2B">Accuracy</text><line x1="46" x2="470" y1="214.0" y2="214.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="218" font-size="12" fill="#888" text-anchor="end">0%</text><line x1="46" x2="470" y1="178.0" y2="178.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="182" font-size="12" fill="#888" text-anchor="end">20%</text><line x1="46" x2="470" y1="142.0" y2="142.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="146" font-size="12" fill="#888" text-anchor="end">40%</text><line x1="46" x2="470" y1="106.0" y2="106.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="110" font-size="12" fill="#888" text-anchor="end">60%</text><line x1="46" x2="470" y1="70.0" y2="70.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="74" font-size="12" fill="#888" text-anchor="end">80%</text><line x1="46" x2="470" y1="34.0" y2="34.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="38" font-size="12" fill="#888" text-anchor="end">100%</text><line x1="46" x2="470" y1="214" y2="214" stroke="#C9D0CC" stroke-width="2"/><text x="46.0" y="232" font-size="12" fill="#666" text-anchor="middle">1</text><text x="167.1" y="232" font-size="12" fill="#666" text-anchor="middle">5</text><text x="318.6" y="232" font-size="12" fill="#666" text-anchor="middle">10</text><text x="470.0" y="232" font-size="12" fill="#666" text-anchor="middle">15</text><text x="258.0" y="252" font-size="12" fill="#888" text-anchor="middle">Epoch</text><polyline points="46.0,119.0 76.3,64.6 106.6,51.3 136.9,46.5 167.1,42.2 197.4,38.3 227.7,35.7 258.0,38.1 288.3,37.2 318.6,35.5 348.9,34.8 379.1,35.2 409.4,35.1 439.7,34.0 470.0,34.1" fill="none" stroke="#9AA19D" stroke-width="3" stroke-linejoin="round"/><polyline points="46.0,108.0 76.3,103.6 106.6,116.0 136.9,122.0 167.1,97.6 197.4,99.6 227.7,90.4 258.0,97.6 288.3,98.0 318.6,92.0 348.9,97.6 379.1,95.6 409.4,97.6 439.7,95.6 470.0,94.0" fill="none" stroke="#0E4A2B" stroke-width="3.5" stroke-linejoin="round"/><circle cx="470" cy="34.1" r="4" fill="#9AA19D"/><circle cx="470" cy="94.0" r="4" fill="#0E4A2B"/></svg>
+<svg viewBox="0 0 580 262" width="100%"><text x="46" y="18" font-size="17" font-weight="700" fill="#0E4A2B">Loss</text><line x1="46" x2="470" y1="214.0" y2="214.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="218" font-size="12" fill="#888" text-anchor="end">0.0</text><line x1="46" x2="470" y1="154.0" y2="154.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="158" font-size="12" fill="#888" text-anchor="end">1.0</text><line x1="46" x2="470" y1="94.0" y2="94.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="98" font-size="12" fill="#888" text-anchor="end">2.0</text><line x1="46" x2="470" y1="34.0" y2="34.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="38" font-size="12" fill="#888" text-anchor="end">3.0</text><line x1="46" x2="470" y1="214" y2="214" stroke="#C9D0CC" stroke-width="2"/><text x="46.0" y="232" font-size="12" fill="#666" text-anchor="middle">1</text><text x="167.1" y="232" font-size="12" fill="#666" text-anchor="middle">5</text><text x="318.6" y="232" font-size="12" fill="#666" text-anchor="middle">10</text><text x="470.0" y="232" font-size="12" fill="#666" text-anchor="middle">15</text><text x="258.0" y="252" font-size="12" fill="#888" text-anchor="middle">Epoch</text><polyline points="46.0,156.2 76.3,186.8 106.6,197.6 136.9,202.7 167.1,205.8 197.4,209.8 227.7,212.0 258.0,210.0 288.3,211.1 318.6,212.1 348.9,213.1 379.1,213.0 409.4,212.8 439.7,213.8 470.0,213.7" fill="none" stroke="#9AA19D" stroke-width="3" stroke-linejoin="round"/><polyline points="46.0,160.2 76.3,140.9 106.6,146.5 136.9,121.3 167.1,134.2 197.4,123.2 227.7,123.5 258.0,103.4 288.3,122.1 318.6,109.0 348.9,78.4 379.1,84.0 409.4,95.4 439.7,71.6 470.0,60.1" fill="none" stroke="#0E4A2B" stroke-width="3.5" stroke-linejoin="round"/><circle cx="470" cy="213.7" r="4" fill="#9AA19D"/><circle cx="470" cy="60.1" r="4" fill="#0E4A2B"/><text x="482" y="64.1" font-size="13" font-weight="700" fill="#0E4A2B">2.57</text><text x="482" y="217.7" font-size="13" fill="#7C857F">0.00</text></svg>
+</div>
+<div class="lane" style="margin-top:14px">실험 7 · 추가 경량화 CNN <span>파라미터 5,411개</span></div>
+<div class="oc-pair">
+<svg viewBox="0 0 580 262" width="100%"><text x="46" y="18" font-size="17" font-weight="700" fill="#0E4A2B">Accuracy</text><line x1="46" x2="470" y1="214.0" y2="214.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="218" font-size="12" fill="#888" text-anchor="end">0%</text><line x1="46" x2="470" y1="178.0" y2="178.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="182" font-size="12" fill="#888" text-anchor="end">20%</text><line x1="46" x2="470" y1="142.0" y2="142.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="146" font-size="12" fill="#888" text-anchor="end">40%</text><line x1="46" x2="470" y1="106.0" y2="106.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="110" font-size="12" fill="#888" text-anchor="end">60%</text><line x1="46" x2="470" y1="70.0" y2="70.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="74" font-size="12" fill="#888" text-anchor="end">80%</text><line x1="46" x2="470" y1="34.0" y2="34.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="38" font-size="12" fill="#888" text-anchor="end">100%</text><line x1="46" x2="470" y1="214" y2="214" stroke="#C9D0CC" stroke-width="2"/><text x="46.0" y="232" font-size="12" fill="#666" text-anchor="middle">1</text><text x="167.1" y="232" font-size="12" fill="#666" text-anchor="middle">5</text><text x="318.6" y="232" font-size="12" fill="#666" text-anchor="middle">10</text><text x="470.0" y="232" font-size="12" fill="#666" text-anchor="middle">15</text><text x="258.0" y="252" font-size="12" fill="#888" text-anchor="middle">Epoch</text><polyline points="46.0,131.5 76.3,116.0 106.6,106.9 136.9,96.4 167.1,98.9 197.4,93.0 227.7,78.1 258.0,73.5 288.3,71.3 318.6,72.2 348.9,68.7 379.1,63.8 409.4,62.3 439.7,60.8 470.0,60.2" fill="none" stroke="#9AA19D" stroke-width="3" stroke-linejoin="round"/><polyline points="46.0,113.2 76.3,116.4 106.6,119.6 136.9,104.8 167.1,110.4 197.4,114.8 227.7,121.6 258.0,116.0 288.3,99.6 318.6,102.4 348.9,98.4 379.1,104.0 409.4,97.6 439.7,106.4 470.0,94.0" fill="none" stroke="#0E4A2B" stroke-width="3.5" stroke-linejoin="round"/><circle cx="470" cy="60.2" r="4" fill="#9AA19D"/><circle cx="470" cy="94.0" r="4" fill="#0E4A2B"/></svg>
+<svg viewBox="0 0 580 262" width="100%"><text x="46" y="18" font-size="17" font-weight="700" fill="#0E4A2B">Loss</text><line x1="46" x2="470" y1="214.0" y2="214.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="218" font-size="12" fill="#888" text-anchor="end">0.0</text><line x1="46" x2="470" y1="154.0" y2="154.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="158" font-size="12" fill="#888" text-anchor="end">1.0</text><line x1="46" x2="470" y1="94.0" y2="94.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="98" font-size="12" fill="#888" text-anchor="end">2.0</text><line x1="46" x2="470" y1="34.0" y2="34.0" stroke="#EEF1EF" stroke-width="1"/><text x="38" y="38" font-size="12" fill="#888" text-anchor="end">3.0</text><line x1="46" x2="470" y1="214" y2="214" stroke="#C9D0CC" stroke-width="2"/><text x="46.0" y="232" font-size="12" fill="#666" text-anchor="middle">1</text><text x="167.1" y="232" font-size="12" fill="#666" text-anchor="middle">5</text><text x="318.6" y="232" font-size="12" fill="#666" text-anchor="middle">10</text><text x="470.0" y="232" font-size="12" fill="#666" text-anchor="middle">15</text><text x="258.0" y="252" font-size="12" fill="#888" text-anchor="middle">Epoch</text><polyline points="46.0,151.6 76.3,159.4 106.6,164.1 136.9,167.6 167.1,167.2 197.4,169.5 227.7,177.4 258.0,180.3 288.3,181.7 318.6,180.8 348.9,183.8 379.1,186.5 409.4,188.6 439.7,190.1 470.0,190.1" fill="none" stroke="#9AA19D" stroke-width="3" stroke-linejoin="round"/><polyline points="46.0,157.2 76.3,161.0 106.6,160.3 136.9,163.6 167.1,163.0 197.4,165.5 227.7,156.4 258.0,163.8 288.3,161.7 318.6,167.2 348.9,166.5 379.1,165.3 409.4,166.5 439.7,162.4 470.0,164.5" fill="none" stroke="#0E4A2B" stroke-width="3.5" stroke-linejoin="round"/><circle cx="470" cy="190.1" r="4" fill="#9AA19D"/><circle cx="470" cy="164.5" r="4" fill="#0E4A2B"/><text x="482" y="168.5" font-size="13" font-weight="700" fill="#0E4A2B">0.83</text><text x="482" y="194.1" font-size="13" fill="#7C857F">0.40</text></svg>
+</div>
+</section>
+</body>
+</html>
